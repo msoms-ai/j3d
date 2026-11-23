@@ -1,7 +1,7 @@
 # ==============================================================================
 # J3D Web (Next.js 15 App Router + Three.js) Production Dockerfile
 # ==============================================================================
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
@@ -44,7 +44,7 @@ RUN npm run build
 # ------------------------------------------------------------------------------
 # Production Runtime Stage
 # ------------------------------------------------------------------------------
-FROM node:20-slim AS runner
+FROM node:22-slim AS runner
 
 WORKDIR /app
 
