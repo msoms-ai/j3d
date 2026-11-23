@@ -85,10 +85,11 @@ jobs:
             echo "🐳 Building and spinning up Docker containers..."
             docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
 
-            # Wait for postgres to be ready and run prisma migrations
-            echo "🗄️ Running Prisma database migrations..."
-            sleep 8
-            docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy || true
+            # Wait for postgres to be ready and push prisma schema & run seed
+            echo "🗄️ Syncing Prisma database schema & seeding..."
+            sleep 5
+            docker compose -f docker-compose.prod.yml exec -T api npx prisma db push
+            docker compose -f docker-compose.prod.yml exec -T api node dist/prisma/seed.js || true
 
             # Prune dangling Docker images to preserve disk space
             echo "🧹 Pruning unused Docker images..."

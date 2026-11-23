@@ -31,10 +31,11 @@ RUN npm run build --workspace=@j3d/shared-types
 COPY apps/api ./apps/api
 COPY Fonts ./Fonts
 
-# Generate Prisma client and build API
+# Generate Prisma client and build API & seed script
 WORKDIR /app/apps/api
 RUN npx prisma generate
 RUN npm run build
+RUN npx tsc prisma/seed.ts --outDir dist/prisma --skipLibCheck --target ES2022 --module CommonJS --moduleResolution node
 
 # ------------------------------------------------------------------------------
 # Production Runtime Stage
