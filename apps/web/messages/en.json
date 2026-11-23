@@ -1,0 +1,62 @@
+{
+  "common": {
+    "platformName": "J3D",
+    "tagline": "AI-Powered On-Demand 3D Printing & UAE Last-Mile Delivery Marketplace",
+    "initiative": "An initiative from msoms.ai 2026",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "continue": "Continue",
+    "back": "Back",
+    "aed": "AED",
+    "viewOrder": "View Order",
+    "status": "Status",
+    "help": "Help & Guided Tour"
+  },
+  "nav": {
+    "studio": "3D Studio Wizard",
+    "orders": "My Orders",
+    "makerRadar": "Maker Print Radar",
+    "courierDispatch": "Delivery Fleet",
+    "profile": "Profile & Fleet",
+    "admin": "Admin Center",
+    "login": "Sign In",
+    "logout": "Sign Out"
+  },
+  "wizard": {
+    "q1Title": "What would you like to 3D Print today with AI?",
+    "q1Subtitle": "Select one of our popular UAE 3D printing categories:",
+    "q2Title": "Select a cultural or functional template:",
+    "q2Subtitle": "Choose a baseline design to customize with parametric AI:",
+    "q3Title": "AI Customization Deep-Dive",
+    "q3Subtitle": "Gemini 4 Hydrogen is tailoring the parametric design for your requirements:",
+    "generateStl": "Compile & Render 3D Preview",
+    "generating": "Compiling 100% Watertight Manifold .STL..."
+  },
+  "studio": {
+    "previewTitle": "Interactive 3D Build-Plate Canvas",
+    "material": "Filament / Resin Material",
+    "colorMode": "Color Mode",
+    "mono": "Mono Color",
+    "multicolor": "Multicolor (AMS)",
+    "scale": "Fixed-Step Scale Size",
+    "dimensions": "Dimensions",
+    "volume": "Mesh Volume",
+    "weight": "Estimated Weight",
+    "minFloor": "Algorithmic Floor Price",
+    "printBudget": "Max 3D Print Budget (AED)",
+    "deliveryBudget": "Max Delivery Budget (AED)",
+    "orderNow": "Authorize Escrow & Dispatch to UAE Makers",
+    "downloadStl": "Download Watertight .STL"
+  },
+  "footer": {
+    "privacy": "Data Privacy",
+    "policy": "Platform Policy",
+    "terms": "Terms of Service",
+    "sla": "Printing & Delivery SLA",
+    "refunds": "Escrow & Refunds",
+    "safety": "3D Material Safety",
+    "version": "Build Version"
+  }
+}

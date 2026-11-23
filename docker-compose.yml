@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: j3d-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: j3d_admin
+      POSTGRES_PASSWORD: j3d_dev_password
+      POSTGRES_DB: j3d_platform
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - j3d_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U j3d_admin -d j3d_platform"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: j3d-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - j3d_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: j3d-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: j3d_minio_user
+      MINIO_ROOT_PASSWORD: j3d_minio_password
+    ports:
+      - "${S3_PORT:-9000}:9000"
+      - "${S3_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - j3d_minio_data:/data
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: j3d-mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_WEB_PORT:-8025}:8025"
+
+volumes:
+  j3d_pg_data:
+    name: j3d_pg_data
+  j3d_redis_data:
+    name: j3d_redis_data
+  j3d_minio_data:
+    name: j3d_minio_data

@@ -1,0 +1,75 @@
+# ==============================================================================
+# J3D API (NestJS + Manifold-3D WASM + Prisma) Production Dockerfile
+# ==============================================================================
+FROM node:20-slim AS builder
+
+WORKDIR /app
+
+# Install system dependencies needed for native modules and Prisma
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy root package manifests and workspace definitions
+COPY package.json package-lock.json ./
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+
+# Install dependencies
+RUN npm ci
+
+# Copy shared-types source and build
+COPY packages/shared-types ./packages/shared-types
+RUN npm run build --workspace=@j3d/shared-types
+
+# Copy API source and font assets
+COPY apps/api ./apps/api
+COPY Fonts ./Fonts
+
+# Generate Prisma client and build API
+WORKDIR /app/apps/api
+RUN npx prisma generate
+RUN npm run build
+
+# ------------------------------------------------------------------------------
+# Production Runtime Stage
+# ------------------------------------------------------------------------------
+FROM node:20-slim AS runner
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV NODE_ENV=production
+ENV PORT=4000
+
+# Copy root package manifests
+COPY package.json package-lock.json ./
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY apps/api/package.json ./apps/api/
+
+# Install production dependencies only
+RUN npm ci --omit=dev
+
+# Copy built artifacts from builder
+COPY --from=builder /app/packages/shared-types/dist ./packages/shared-types/dist
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+COPY --from=builder /app/apps/api/assets ./apps/api/assets
+COPY --from=builder /app/Fonts ./Fonts
+
+WORKDIR /app/apps/api
+RUN npx prisma generate
+
+EXPOSE 4000
+
+CMD ["node", "dist/src/main.js"]

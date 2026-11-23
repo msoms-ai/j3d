@@ -1,0 +1,100 @@
+name: Deploy J3D Platform to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  test-and-verify:
+    name: Test & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Monorepo Dependencies
+        run: npm ci
+
+      - name: Build Shared Types
+        run: npm run build --workspace=@j3d/shared-types
+
+      - name: Typecheck Backend & Frontend
+        run: npm run typecheck
+
+  deploy-to-production:
+    name: Deploy to Production Server (j3d.msoms.ai)
+    needs: test-and-verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute Remote Deployment via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          timeout: 600s
+          command_timeout: 30m
+          script: |
+            set -e
+            echo "🚀 Starting J3D Production Deployment..."
+
+            DEPLOY_DIR="/var/www/vhosts/msoms.ai/j3d.msoms.ai"
+            mkdir -p "$DEPLOY_DIR"
+            cd "$DEPLOY_DIR"
+
+            # Initialize or pull latest main branch
+            if [ ! -d ".git" ]; then
+              echo "📦 Cloning repository..."
+              git clone https://github.com/msoms-ai/j3d.git .
+            else
+              echo "🔄 Pulling latest changes from main..."
+              git fetch origin main
+              git reset --hard origin/main
+            fi
+
+            # Ensure .env exists in deploy directory
+            if [ ! -f ".env" ]; then
+              echo "⚠️ Warning: .env not found. Creating from .env.production or template..."
+              if [ -f ".env.production" ]; then
+                cp .env.production .env
+              else
+                cp .env.example .env
+              fi
+            fi
+
+            # Build and deploy Docker containers
+            echo "🐳 Building and spinning up Docker containers..."
+            docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
+
+            # Wait for postgres to be ready and run prisma migrations
+            echo "🗄️ Running Prisma database migrations..."
+            sleep 8
+            docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy || true
+
+            # Prune dangling Docker images to preserve disk space
+            echo "🧹 Pruning unused Docker images..."
+            docker image prune -f
+
+            # Health Check Verification
+            echo "🩺 Verifying production health check..."
+            sleep 5
+            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8070/api/v1/health || true)
+            echo "Backend HTTP status: $HEALTH_STATUS"
+
+            WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3070 || true)
+            echo "Frontend HTTP status: $WEB_STATUS"
+
+            echo "✅ J3D Production Deployment successfully completed!"

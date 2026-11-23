@@ -1,0 +1,29 @@
+{
+  "name": "j3d-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run dev --workspace=@j3d/api",
+    "dev:web": "npm run dev --workspace=@j3d/web",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "playwright test --config=apps/web/playwright.config.ts",
+    "db:generate": "npm run db:generate --workspace=@j3d/api",
+    "db:migrate": "npm run db:migrate --workspace=@j3d/api",
+    "db:seed": "npm run db:seed --workspace=@j3d/api"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@types/qrcode": "^1.5.6",
+    "qrcode": "^1.5.4"
+  }
+}
