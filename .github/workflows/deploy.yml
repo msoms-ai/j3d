@@ -60,8 +60,11 @@ jobs:
 
             # Initialize or pull latest main branch
             if [ ! -d ".git" ]; then
-              echo "📦 Cloning repository..."
-              git clone https://github.com/msoms-ai/j3d.git .
+              echo "📦 Initializing and fetching repository..."
+              git init
+              git remote add origin https://github.com/msoms-ai/j3d.git || git remote set-url origin https://github.com/msoms-ai/j3d.git
+              git fetch origin main
+              git checkout -f -B main origin/main
             else
               echo "🔄 Pulling latest changes from main..."
               git fetch origin main
