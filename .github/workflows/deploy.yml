@@ -30,6 +30,9 @@ jobs:
       - name: Build Shared Types
         run: npm run build --workspace=@j3d/shared-types
 
+      - name: Generate Prisma Client
+        run: npm run db:generate
+
       - name: Typecheck Backend & Frontend
         run: npm run typecheck
 
